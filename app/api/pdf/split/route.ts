@@ -7,8 +7,8 @@ import axios from 'axios'
 // Edge runtime doesn't support Node.js specific modules
 export const runtime = 'nodejs'
 
-// n8n webhook URL from environment variable or undefined (optional)
-const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
+// n8n webhook URL - Production (n8n Cloud)
+const N8N_WEBHOOK_URL = 'https://willhans.app.n8n.cloud/webhook-test/947f2eaa-8843-4fbf-9134-6b87ab40a5b0'
 
 export async function POST(request: NextRequest) {
   try {
