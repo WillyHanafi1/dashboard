@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PDFDocument } from 'pdf-lib'
 import axios from 'axios'
 
+// Force Node.js runtime instead of Edge runtime
+// This is required for 'form-data' npm package to work properly
+// Edge runtime doesn't support Node.js specific modules
+export const runtime = 'nodejs'
+
 // n8n webhook URL from environment variable or undefined (optional)
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
 
