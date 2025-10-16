@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PDFDocument } from 'pdf-lib'
 import axios from 'axios'
 
-// n8n webhook URL
-const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/c8a5808f-4f67-4dc5-87e0-299df709cbb8'
+// n8n webhook URL from environment variable or undefined (optional)
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL
 
 export async function POST(request: NextRequest) {
   try {
@@ -74,6 +74,35 @@ export async function POST(request: NextRequest) {
       console.log(`✓ Chunk ${i + 1}/${totalChunks} created (${chunkBuffer.length} bytes)`)
     }
 
+    // Check if webhook URL is configured
+    if (!N8N_WEBHOOK_URL) {
+      console.log('⚠️  No n8n webhook URL configured. Skipping webhook call.')
+      
+      // Return success without webhook call
+      return NextResponse.json({
+        success: true,
+        message: `Successfully processed ${totalChunks} chunks (webhook not configured)`,
+        summary: {
+          originalFileName: file.name,
+          totalPages,
+          totalChunks,
+          chunkSize,
+          totalSize: chunks.reduce((sum, c) => sum + c.fileSize, 0)
+        },
+        webhookResponse: {
+          status: 200,
+          statusText: 'OK',
+          data: { message: 'Webhook URL not configured. Set N8N_WEBHOOK_URL environment variable to enable webhook integration.' }
+        },
+        chunks: chunks.map(chunk => ({
+          chunkNumber: chunk.chunkNumber,
+          pageRange: chunk.pageRange,
+          chunkFileName: chunk.chunkFileName,
+          fileSize: chunk.fileSize
+        }))
+      })
+    }
+
     // Send all chunks in a single multipart/form-data request
     console.log('📤 Sending all chunks as binary files in a single request to n8n...')
     
@@ -103,7 +132,7 @@ export async function POST(request: NextRequest) {
         }))
       })
 
-      const response = await axios.post(N8N_WEBHOOK_URL, formData, {
+      const response = await axios.post(N8N_WEBHOOK_URL!, formData, {
         headers: {
           ...formData.getHeaders(),
         },
