@@ -13,18 +13,43 @@ export async function fetchInvoices(): Promise<Invoice[]> {
       return mockInvoices
     }
 
-    const { data, error } = await supabase
-      .from('MainFaktur')
-      .select('*')
-      .order('TanggalFaktur', { ascending: false })
+    // Fetch all data using pagination to bypass 1000 record limit
+    let allData: Invoice[] = []
+    let from = 0
+    const batchSize = 1000
+    let hasMore = true
 
-    if (error) {
-      console.error('Error fetching invoices from Supabase:', error)
-      console.log('Falling back to mock data')
-      return mockInvoices
+    while (hasMore) {
+      const { data, error, count } = await supabase
+        .from('MainFaktur')
+        .select('*', { count: 'exact' })
+        .order('TanggalFaktur', { ascending: false })
+        .range(from, from + batchSize - 1)
+
+      if (error) {
+        console.error('Error fetching invoices from Supabase:', error)
+        console.log('Falling back to mock data')
+        return mockInvoices
+      }
+
+      if (data && data.length > 0) {
+        allData = [...allData, ...data]
+        from += batchSize
+        
+        // Check if we've fetched all records
+        if (count && allData.length >= count) {
+          hasMore = false
+          console.log(`Successfully fetched all ${count} records from MainFaktur table`)
+        } else if (data.length < batchSize) {
+          hasMore = false
+          console.log(`Successfully fetched ${allData.length} records from MainFaktur table`)
+        }
+      } else {
+        hasMore = false
+      }
     }
 
-    return data || mockInvoices
+    return allData.length > 0 ? allData : mockInvoices
   } catch (error) {
     console.error('Failed to fetch invoices:', error)
     console.log('Using mock data as fallback')

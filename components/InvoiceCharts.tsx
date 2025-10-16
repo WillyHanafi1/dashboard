@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartData, VendorData } from '@/types/invoice'
 import { formatCurrency } from '@/lib/invoiceQueries'
 import { AreaChart, BarChart, DonutChart } from '@tremor/react'
-import { useTheme } from 'next-themes'
 
 interface InvoiceChartsProps {
   chartData: ChartData[]
@@ -12,8 +11,6 @@ interface InvoiceChartsProps {
 }
 
 export default function InvoiceCharts({ chartData, vendorData, loading = false }: InvoiceChartsProps) {
-  const { theme } = useTheme()
-  
   // Menyiapkan data untuk grafik donat status pembayaran
   const totalPaid = chartData.reduce((sum, item) => sum + item.paidAmount, 0)
   const totalPending = chartData.reduce((sum, item) => sum + item.pendingAmount, 0)
@@ -31,18 +28,30 @@ export default function InvoiceCharts({ chartData, vendorData, loading = false }
     },
   ]
 
-  // Warna dinamis berdasarkan tema (terang/gelap)
-  const getChartColors = () => {
-    // Memeriksa apakah tema saat ini adalah 'dark'
-    const isDark = theme === 'dark'
-    return {
-      area: isDark ? ['#10b981', '#f59e0b'] : ['#059669', '#d97706'], // emerald, amber
-      bar: isDark ? ['#06b6d4'] : ['#0891b2'],   // cyan
-      donut: isDark ? ['#22c55e', '#eab308'] : ['#16a34a', '#ca8a04'] // green, yellow
-    }
-  }
+  // Sort chart data chronologically
+  const sortedChartData = [...chartData].sort((a, b) => {
+    const [aMonth, aYear] = a.month.split(' ');
+    const [bMonth, bYear] = b.month.split(' ');
+    const monthMap: { [key: string]: number } = { 'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'Mei': 5, 'Jun': 6, 'Jul': 7, 'Agu': 8, 'Sep': 9, 'Okt': 10, 'Nov': 11, 'Des': 12 };
+    
+    const aDate = new Date(parseInt(aYear), monthMap[aMonth] - 1);
+    const bDate = new Date(parseInt(bYear), monthMap[bMonth] - 1);
+    
+    return aDate.getTime() - bDate.getTime();
+  });
 
-  const chartColors = getChartColors()
+  // Sort and take top 10 vendors
+  const sortedVendorData = [...vendorData]
+    .sort((a, b) => b.totalAmount - a.totalAmount)
+    .slice(0, 10)
+    .map((item, index) => ({ ...item, rank: `#${index + 1}` }));
+
+  // Rename categories for the legend
+  const renamedChartData = sortedChartData.map(item => ({
+    ...item,
+    'Lunas': item.paidAmount,
+    'Pending': item.pendingAmount,
+  }));
 
   if (loading) {
     return (
@@ -75,12 +84,15 @@ export default function InvoiceCharts({ chartData, vendorData, loading = false }
         <CardContent>
           <AreaChart
             className="h-72"
-            data={chartData}
+            data={renamedChartData}
             index="month"
-            categories={["paidAmount", "pendingAmount"]}
-            colors={chartColors.area} // Menggunakan warna dinamis
+            categories={["Lunas", "Pending"]}
+            colors={["emerald", "amber"]}
             valueFormatter={(value) => formatCurrency(value)}
-            yAxisWidth={120}
+            yAxisWidth={150}
+            curveType="monotone"
+            showAnimation={true}
+            connectNulls={true}
             customTooltip={({ active, payload, label }) => {
               if (active && payload && payload.length) {
                 return (
@@ -88,7 +100,7 @@ export default function InvoiceCharts({ chartData, vendorData, loading = false }
                     <p className="text-foreground font-medium">{`${label}`}</p>
                     {payload.map((entry, index) => (
                       <p key={index} className="text-sm" style={{ color: entry.color }}>
-                        {`${entry.name === 'paidAmount' ? 'Lunas' : 'Pending'}: ${formatCurrency(entry.value as number)}`}
+                        {`${entry.name}: ${formatCurrency(entry.value as number)}`}
                       </p>
                     ))}
                   </div>
@@ -112,21 +124,29 @@ export default function InvoiceCharts({ chartData, vendorData, loading = false }
           <CardContent>
             <BarChart
               className="h-80"
-              data={vendorData}
+              data={sortedVendorData}
               index="vendor"
               categories={["totalAmount"]}
-              colors={chartColors.bar} // PERBAIKAN: Menggunakan warna dinamis dari chartColors.bar
+              colors={["blue"]}
               valueFormatter={(value) => formatCurrency(value)}
-              yAxisWidth={120}
+              yAxisWidth={150}
               layout="vertical"
+              showAnimation={true}
               customTooltip={({ active, payload, label }) => {
                 if (active && payload && payload.length) {
+                  const data = payload[0].payload;
                   return (
-                    <div className="bg-background border border-border rounded-lg shadow-lg p-3">
-                      <p className="text-foreground font-medium">{`${label}`}</p>
-                      <p className="text-sm text-primary">
-                        {`Total: ${formatCurrency(payload[0].value as number)}`}
-                      </p>
+                    <div className="bg-background border border-border rounded-lg shadow-lg p-3 min-w-[200px]">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-foreground font-bold text-lg">{label}</p>
+                        <p className="text-sm font-mono text-blue-500 bg-blue-500/10 px-2 py-1 rounded">{data.rank}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground text-sm">Total Faktur</span>
+                        <span className="text-primary font-semibold">
+                          {formatCurrency(payload[0].value as number)}
+                        </span>
+                      </div>
                     </div>
                   )
                 }
@@ -151,7 +171,9 @@ export default function InvoiceCharts({ chartData, vendorData, loading = false }
               category="value"
               index="name"
               valueFormatter={(value) => formatCurrency(value)}
-              colors={chartColors.donut} // PERBAIKAN: Menggunakan warna dinamis dari chartColors.donut
+              colors={["emerald", "yellow"]}
+              showAnimation={true}
+              label=""
               customTooltip={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   const data = payload[0].payload
@@ -170,22 +192,31 @@ export default function InvoiceCharts({ chartData, vendorData, loading = false }
                 return null
               }}
             />
+            {/* Total pembayaran di bawah chart */}
+            <div className="mt-2 text-center">
+              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                {formatCurrency(totalPaid + totalPending)}
+              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Total Pembayaran
+              </p>
+            </div>
             <div className="mt-4 grid grid-cols-2 gap-4 text-center w-full">
               <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                <div className="text-2xl font-bold text-green-400">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {statusData[0].share.toFixed(1)}%
                 </div>
-                <div className="text-sm text-green-300">Lunas</div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-sm text-green-600 dark:text-green-300">Lunas</div>
+                <div className="text-xs text-foreground mt-1">
                   {formatCurrency(statusData[0].value)}
                 </div>
               </div>
               <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                <div className="text-2xl font-bold text-orange-400">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                   {statusData[1].share.toFixed(1)}%
                 </div>
-                <div className="text-sm text-orange-300">Pending</div>
-                <div className="text-xs text-muted-foreground mt-1">
+                <div className="text-sm text-orange-600 dark:text-orange-300">Pending</div>
+                <div className="text-xs text-foreground mt-1">
                   {formatCurrency(statusData[1].value)}
                 </div>
               </div>

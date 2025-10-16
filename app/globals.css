@@ -58,194 +58,99 @@
   }
 }
 
-/* Custom Tremor Chart Styling for Dark Theme */
+/* Custom Tremor Chart Styling for Theme Support */
 @layer components {
-  .tremor-chart-container {
-    @apply bg-transparent;
+  /* Universal text styling for all chart types - ensuring visibility in both themes */
+  .tremor-AreaChart text,
+  .tremor-BarChart text,
+  .tremor-DonutChart text,
+  .recharts-text,
+  .recharts-cartesian-axis-tick-value,
+  .recharts-polar-grid-angle-tick-value,
+  .recharts-label {
+    @apply fill-foreground !important;
+    font-weight: 500 !important;
   }
   
-  /* Force chart colors to override dark theme */
-  .tremor-AreaChart .recharts-area,
-  .tremor-BarChart .recharts-bar,
-  .tremor-DonutChart .recharts-pie-sector {
-    opacity: 1 !important;
-    fill-opacity: 0.9 !important;
+  /* Dark theme specific text fixes */
+  .dark .tremor-AreaChart text,
+  .dark .tremor-BarChart text,
+  .dark .tremor-DonutChart text,
+  .dark .recharts-text {
+    fill: rgb(248 250 252) !important; /* slate-50 for high contrast */
   }
   
-  /* Super specific selectors to force colors */
-  .tremor-AreaChart .recharts-area {
-    fill: #10b981 !important;
+  /* Light theme specific text fixes */
+  .light .tremor-AreaChart text,
+  .light .tremor-BarChart text,
+  .light .tremor-DonutChart text,
+  .light .recharts-text {
+    fill: rgb(15 23 42) !important; /* slate-900 for high contrast */
   }
   
-  .tremor-AreaChart .recharts-area:nth-of-type(2) {
-    fill: #f59e0b !important;
-  }
-  
-  .tremor-BarChart .recharts-bar {
-    fill: #06b6d4 !important;
-  }
-  
-  .tremor-DonutChart .recharts-pie-sector:first-child {
-    fill: #22c55e !important;
-  }
-  
-  .tremor-DonutChart .recharts-pie-sector:last-child {
-    fill: #eab308 !important;
-  }
-  
-  /* Override any potential dark theme interference */
-  .dark .tremor-AreaChart .recharts-area,
-  .dark .tremor-BarChart .recharts-bar,
-  .dark .tremor-DonutChart .recharts-pie-sector {
-    fill: inherit !important;
-  }
-  
-  .dark .tremor-AreaChart .recharts-area:first-of-type {
-    fill: #10b981 !important;
-  }
-  
-  .dark .tremor-AreaChart .recharts-area:last-of-type {
-    fill: #f59e0b !important;
-  }
-  
-  .dark .tremor-BarChart .recharts-bar {
-    fill: #06b6d4 !important;
-  }
-  
-  .dark .tremor-DonutChart .recharts-pie-sector:first-child {
-    fill: #22c55e !important;
-  }
-  
-  .dark .tremor-DonutChart .recharts-pie-sector:last-child {
-    fill: #eab308 !important;
-  }
-  
-  /* Tremor Area Chart dark theme fixes with bright colors */
-  .tremor-AreaChart text {
-    @apply fill-foreground font-medium;
-  }
-  
-  .tremor-AreaChart .recharts-cartesian-axis-line,
-  .tremor-AreaChart .recharts-cartesian-axis-tick-line {
-    @apply stroke-border opacity-80;
-  }
-  
-  .tremor-AreaChart .recharts-cartesian-grid-horizontal line,
-  .tremor-AreaChart .recharts-cartesian-grid-vertical line {
+  /* Grid and axis line styling */
+  .recharts-cartesian-grid line {
     @apply stroke-border/40;
   }
   
-  /* Tremor Bar Chart dark theme fixes with enhanced visibility */
-  .tremor-BarChart text {
-    @apply fill-foreground font-medium;
-  }
-  
+  .tremor-AreaChart .recharts-cartesian-axis-line,
+  .tremor-AreaChart .recharts-cartesian-axis-tick-line,
   .tremor-BarChart .recharts-cartesian-axis-line,
   .tremor-BarChart .recharts-cartesian-axis-tick-line {
     @apply stroke-border opacity-80;
   }
   
-  .tremor-BarChart .recharts-cartesian-grid-horizontal line,
-  .tremor-BarChart .recharts-cartesian-grid-vertical line {
-    @apply stroke-border/40;
+  /* Legend and tooltip styling */
+  .tremor-Legend text,
+  .recharts-legend-item-text {
+    @apply fill-foreground !important;
   }
   
-  /* Tremor Donut Chart dark theme fixes */
-  .tremor-DonutChart text {
-    @apply fill-foreground font-medium;
-  }
-  
-  /* Legend styling with better contrast */
-  .tremor-Legend text {
-    @apply fill-foreground font-medium;
-  }
-  
-  /* Enhanced tooltip styling */
-  .tremor-Tooltip {
-    @apply bg-background border-border text-foreground shadow-xl;
-  }
-  
-  /* Chart responsive text sizing with better visibility */
-  .tremor-AreaChart text,
-  .tremor-BarChart text,
-  .tremor-DonutChart text {
-    @apply text-xs font-medium;
-  }
-  
-  /* Enhanced tooltip wrapper */
   .recharts-default-tooltip {
     @apply bg-background border border-border rounded-lg shadow-xl !important;
-    filter: drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));
   }
   
   .recharts-tooltip-wrapper {
     @apply text-foreground;
   }
-  
-  /* Grid lines enhancement with better visibility */
-  .recharts-cartesian-grid line {
-    @apply stroke-border/30;
-  }
-  
-  /* Axis labels enhancement */
-  .recharts-text.recharts-cartesian-axis-tick-value {
-    @apply fill-muted-foreground font-medium;
-  }
-  
-  /* Enhanced chart data visibility */
-  .recharts-area-area,
-  .recharts-bar-rectangle,
-  .recharts-pie-sector {
-    filter: brightness(1.1) saturate(1.2);
-  }
-  
-  /* Chart legend improvements */
-  .recharts-legend-wrapper {
-    @apply text-foreground;
-  }
-  
-  .recharts-legend-item-text {
-    @apply fill-foreground !important;
-  }
-  
-  /* Light theme specific chart styling */
-  .light .tremor-AreaChart .recharts-area:first-of-type {
-    fill: #059669 !important; /* Darker emerald for light theme */
-  }
-  
-  .light .tremor-AreaChart .recharts-area:last-of-type {
-    fill: #d97706 !important; /* Darker amber for light theme */
-  }
-  
-  .light .tremor-BarChart .recharts-bar {
-    fill: #0891b2 !important; /* Darker cyan for light theme */
-  }
-  
-  .light .tremor-DonutChart .recharts-pie-sector:first-child {
-    fill: #16a34a !important; /* Darker green for light theme */
-  }
-  
-  .light .tremor-DonutChart .recharts-pie-sector:last-child {
-    fill: #ca8a04 !important; /* Darker yellow for light theme */
-  }
-  
-  /* Light theme grid and axis styling */
-  .light .recharts-cartesian-grid line {
-    @apply stroke-border/50;
-  }
-  
-  .light .tremor-AreaChart .recharts-cartesian-axis-line,
-  .light .tremor-AreaChart .recharts-cartesian-axis-tick-line,
-  .light .tremor-BarChart .recharts-cartesian-axis-line,
-  .light .tremor-BarChart .recharts-cartesian-axis-tick-line {
-    @apply stroke-border/60;
-  }
 }
 
-/* Additional responsive chart improvements */
+/* Responsive chart text sizing */
 @media (max-width: 640px) {
   .tremor-AreaChart text,
   .tremor-BarChart text {
     @apply text-[10px];
+  }
+}
+
+/* Elegant chart styling with transparency effects */
+@layer components {
+  /* Bar Chart transparency and elegance */
+  .tremor-BarChart .recharts-bar-rectangle {
+    opacity: 0.85;
+    transition: opacity 0.3s ease;
+  }
+  
+  .tremor-BarChart .recharts-bar-rectangle:hover {
+    opacity: 1;
+    filter: brightness(1.1);
+  }
+  
+  /* Donut Chart transparency and elegance */
+  .tremor-DonutChart .recharts-pie-sector {
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+  
+  .tremor-DonutChart .recharts-pie-sector:hover {
+    opacity: 1;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)) brightness(1.05);
+    transform: scale(1.02);
+  }
+  
+  /* Area Chart additional elegance */
+  .tremor-AreaChart .recharts-area {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   }
 }

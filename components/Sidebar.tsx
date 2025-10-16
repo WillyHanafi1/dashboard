@@ -7,7 +7,8 @@ import {
   LayoutDashboard, 
   FileText, 
   Building2, 
-  Settings 
+  Settings,
+  FileCheck2
 } from 'lucide-react'
 
 const navigation = [
@@ -17,14 +18,19 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: 'Faktur',
+    name: 'Pengeluaran',
     href: '/dashboard/faktur',
     icon: FileText,
   },
   {
-    name: 'Vendor',
+    name: 'Pendapatan',
     href: '/dashboard/vendor',
     icon: Building2,
+  },
+  {
+    name: 'Rekonsiliasi Bank',
+    href: '/dashboard/rekonsiliasi',
+    icon: FileCheck2,
   },
 ]
 
